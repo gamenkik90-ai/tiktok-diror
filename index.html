@@ -71,7 +71,7 @@ async function loadSocialState(){
 }
 async function loadFeed(){
  $('feedList').innerHTML='<div class="empty">Загружаем видео...</div>';
- const {data,error}=await db.from('videos').select('id,user_id,caption,video_path,created_at,profiles(username,display_name)').eq('is_public',true).order('created_at',{ascending:false}).limit(40);
+ const {data,error}=await db.from('videos').select('id,user_id,caption,video_path,created_at,profiles:profiles!videos_user_id_fkey(username,display_name)').eq('is_public',true).order('created_at',{ascending:false}).limit(40);
  if(error){$('feedList').innerHTML='<div class="empty">Ошибка загрузки: '+esc(error.message)+'</div>';return}
  videosCache=data||[];if(!videosCache.length){$('feedList').innerHTML='<div class="empty">Пока нет видео.<br>Стань первым автором Diror — нажми «Создать».</div>';return}
  const ids=videosCache.map(v=>v.id);const {data:likes}=await db.from('likes').select('video_id').in('video_id',ids);
@@ -94,7 +94,7 @@ async function toggleSave(id,btn){const had=savedIds.has(id);const q=had?db.from
 function openModal(html){$('modalCard').innerHTML=html;$('modal').classList.remove('hidden')}
 function closeModal(){$('modal').classList.add('hidden')}
 async function openComments(id){
- const {data,error}=await db.from('comments').select('id,body,created_at,profiles(username)').eq('video_id',id).order('created_at',{ascending:true}).limit(100);
+ const {data,error}=await db.from('comments').select('id,body,created_at,profiles:profiles!comments_user_id_fkey(username)').eq('video_id',id).order('created_at',{ascending:true}).limit(100);
  let html=`<h3>Комментарии</h3><div id="commentList">${error?esc(error.message):(data||[]).map(c=>`<div class="comment"><b>@${esc(c.profiles?.username||'user')}</b><br>${esc(c.body)}</div>`).join('')||'<p class="muted">Пока нет комментариев.</p>'}</div><textarea id="commentBody" class="field" rows="2" maxlength="500" placeholder="Напиши комментарий..."></textarea><button class="primary" onclick="sendComment('${id}')">Отправить</button>`;
  openModal(html)
 }
