@@ -224,7 +224,25 @@ header.diror-header{
   color:white;
   border-bottom-color:#a78bfa;
 }
-</style>
+.like-burst{
+  position:absolute;
+  z-index:6;
+  left:50%;
+  top:45%;
+  transform:translate(-50%,-50%);
+  font-size:90px;
+  pointer-events:none;
+  animation:likeBurst .75s ease-out forwards;
+  filter:drop-shadow(0 4px 15px #ff4b8b88);
+}
+
+@keyframes likeBurst{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}
+  35%{opacity:1;transform:translate(-50%,-50%) scale(1.25)}
+  65%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.5)}
+}
+ </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body><div class="app">
@@ -405,4 +423,18 @@ function toggleVideoSound(btn) {
   video.muted = !dirorSoundEnabled;
   btn.textContent = dirorSoundEnabled ? '🔊' : '🔇';
 }
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.action button[onclick^="toggleLike"]');
+  if (!btn || btn.classList.contains('liked')) return;
+
+  const post = btn.closest('.post');
+  if (!post) return;
+
+  const heart = document.createElement('div');
+  heart.className = 'like-burst';
+  heart.textContent = '❤️';
+
+  post.appendChild(heart);
+  heart.addEventListener('animationend', () => heart.remove());
+}, true);
 </script></body></html>
