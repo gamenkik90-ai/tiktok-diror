@@ -309,8 +309,32 @@ async function loadFeed(){
   const vid=el.querySelector('video');vid.playbackRate=Number($('speed')?.value||1);vid.addEventListener('click',()=>vid.paused?vid.play():vid.pause());
   $('feedList').appendChild(el);
  }
- const obs=new IntersectionObserver(entries=>entries.forEach(e=>{const v=e.target;if(e.isIntersecting){document.querySelectorAll('.post video').forEach(x=>{if(x!==v)x.pause()});v.play().catch(()=>{})}else v.pause()}),{threshold:.65});
- document.querySelectorAll('.post video').forEach(v=>obs.observe(v));
+ const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    const video = e.target;
+
+    if (e.isIntersecting) {
+      document.querySelectorAll('.post video').forEach(other => {
+        if (other !== video) {
+          other.pause();
+          other.muted = true;
+        }
+      });
+
+      video.muted = !dirorSoundEnabled;
+      video.play().catch(() => {});
+
+      const soundBtn = video.closest('.post')?.querySelector('.action button');
+      if (soundBtn) {
+        soundBtn.textContent = dirorSoundEnabled ? '🔊' : '🔇';
+      }
+    } else {
+      video.pause();
+    }
+  });
+}, { threshold: 0.65 });
+
+document.querySelectorAll('.post video').forEach(v => obs.observe(v));
 }
 async function toggleLike(id,btn){const had=likedIds.has(id);let q=had?db.from('likes').delete().eq('video_id',id).eq('user_id',currentUser.id):db.from('likes').insert({video_id:id,user_id:currentUser.id});const {error}=await q;if(error){toast(error.message);return}had?likedIds.delete(id):likedIds.add(id);btn.classList.toggle('liked',!had);btn.textContent=had?'♡':'♥';const span=btn.parentElement.querySelector('span');span.textContent=Math.max(0,Number(span.textContent)+(had?-1:1))}
 async function toggleFollow(id){if(id===currentUser.id){toast('Это твой аккаунт');return}const had=followingIds.has(id);const q=had?db.from('follows').delete().eq('follower_id',currentUser.id).eq('following_id',id):db.from('follows').insert({follower_id:currentUser.id,following_id:id});const {error}=await q;if(error){toast(error.message);return}had?followingIds.delete(id):followingIds.add(id);toast(had?'Подписка отменена':'Ты подписался')}
@@ -355,4 +379,30 @@ function toggleVideoSound(btn){
 }
 async function signOut(){await db.auth.signOut();currentUser=null;showOnly('auth');authMode('login')}
 boot();
+let dirorSoundEnabled = false;
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.action button')) {
+    dirorSoundEnabled = true;
+
+    const activePost = document.querySelector('.post');
+    if (activePost) {
+      const video = activePost.querySelector('video');
+      if (video) {
+        video.muted = false;
+        video.play().catch(() => {});
+      }
+    }
+  }
+});
+
+function toggleVideoSound(btn) {
+  const post = btn.closest('.post');
+  const video = post?.querySelector('video');
+  if (!video) return;
+
+  dirorSoundEnabled = !dirorSoundEnabled;
+  video.muted = !dirorSoundEnabled;
+  btn.textContent = dirorSoundEnabled ? '🔊' : '🔇';
+}
 </script></body></html>
