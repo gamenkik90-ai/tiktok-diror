@@ -324,7 +324,36 @@ async function loadFeed(){
   el.innerHTML=`<video src="${esc(url)}" playsinline loop muted preload="metadata"></video><div class="post-info"><div class="username">@${esc(name)}</div><div class="caption">${esc(v.caption)}</div></div><div class="post-actions">
 <div class="action"><button onclick="toggleVideoSound(this)">🔇</button><span>Звук</span></div>
 <div class="action"><button class="${likedIds.has(v.id)?'liked':''}" onclick="toggleLike('${v.id}',this)">${likedIds.has(v.id)?'♥':'♡'}</button><span>${counts[v.id]||0}</span></div><div class="action"><button onclick="openComments('${v.id}')">▢</button><span>Комменты</span></div><div class="action"><button onclick="toggleFollow('${v.user_id}')">${followingIds.has(v.user_id)?'✓':'+'}</button><span>Подписка</span></div><div class="action"><button onclick="toggleSave('${v.id}',this)">${savedIds.has(v.id)?'★':'☆'}</button><span>Сохранить</span></div><div class="action"><button onclick="reportVideo('${v.id}','${v.user_id}')">⚑</button><span>Жалоба</span></div></div>`;
-  const vid=el.querySelector('video');vid.playbackRate=Number($('speed')?.value||1);vid.addEventListener('click',()=>vid.paused?vid.play():vid.pause());
+  const vid=el.querySelector('video');vid.playbackRate=Number($('speed')?.value||1);let lastTap = 0;
+
+vid.addEventListener('click', () => {
+  const now = Date.now();
+
+  if (now - lastTap < 300) {
+    lastTap = 0;
+
+    const post = vid.closest('.post');
+    const likeBtn = post?.querySelector('.action button[onclick^="toggleLike"]');
+
+    if (likeBtn && !likeBtn.classList.contains('liked')) {
+      likeBtn.click();
+    }
+
+    return;
+  }
+
+  lastTap = now;
+
+  setTimeout(() => {
+    if (lastTap === now) {
+      if (vid.paused) {
+        vid.play().catch(() => {});
+      } else {
+        vid.pause();
+      }
+    }
+  }, 300);
+});
   $('feedList').appendChild(el);
  }
  const obs = new IntersectionObserver(entries => {
