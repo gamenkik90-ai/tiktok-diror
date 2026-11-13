@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09090f"><title>Diror — короткие видео</title>
+<style>
+:root{color-scheme:dark;--bg:#09090f;--panel:#151520;--line:#2a2a39;--txt:#f6f4ff;--muted:#aaa7bb;--accent:#a78bfa;--pink:#ff6d9d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer;color:inherit;border:0}.app{max-width:560px;margin:auto;height:100dvh;position:relative;background:#08080d;overflow:hidden}.hidden{display:none!important}
+header{height:60px;position:absolute;z-index:5;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:linear-gradient(#09090fee,#09090f00)}.logo{font-size:21px;font-weight:900;letter-spacing:-1px}.logo span{color:var(--accent)}.header-btn{background:#ffffff18;border:1px solid #ffffff20;border-radius:50%;width:38px;height:38px}
+main{height:100%;overflow:auto}.feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}.feed::-webkit-scrollbar{display:none}
+.post{height:100%;min-height:560px;position:relative;scroll-snap-align:start;background:#171524;overflow:hidden}.post video{width:100%;height:100%;object-fit:cover;background:#12121b}.post:after{content:"";position:absolute;inset:35% 0 0;pointer-events:none;background:linear-gradient(transparent,#08080df0)}
+.video-placeholder{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 35%,#514078,#171524 60%,#09090f);font-size:18px;font-weight:800;color:#e8ddff}
+.post-info{position:absolute;z-index:2;left:16px;right:78px;bottom:94px}.username{font-weight:800;margin-bottom:8px}.caption{font-size:14px;line-height:1.4;overflow-wrap:anywhere}.post-actions{position:absolute;z-index:3;right:12px;bottom:105px;display:flex;flex-direction:column;gap:17px;align-items:center}.action{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px}.action button{width:45px;height:45px;border-radius:50%;background:#ffffff24;border:1px solid #ffffff30;font-size:21px}.action .liked{color:var(--pink)}.bottom{position:absolute;z-index:7;bottom:0;left:0;right:0;height:68px;padding:7px 8px env(safe-area-inset-bottom);display:flex;justify-content:space-around;align-items:center;background:#101018f5;border-top:1px solid var(--line)}.nav{background:none;color:var(--muted);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:54px}.nav b{font-size:20px}.nav.active{color:#d7c9ff}.nav .plus{font-size:22px;background:var(--accent);color:#171124;border-radius:9px;width:37px;height:27px;line-height:26px}
+.screen{height:100%;overflow-y:auto;padding:76px 16px 90px}.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:15px;margin-bottom:12px}.field{width:100%;background:#0e0e16;border:1px solid #39394a;color:white;padding:13px;border-radius:11px;margin:6px 0 12px;outline:none}.field:focus{border-color:var(--accent)}.primary{background:linear-gradient(110deg,#b69aff,#8063d1);color:#171124;font-weight:800;padding:13px 16px;border-radius:12px;width:100%}.secondary{background:#292938;padding:11px 14px;border-radius:11px}.muted{color:var(--muted);font-size:13px}.row{display:flex;gap:9px;align-items:center}.row>*{min-width:0}.avatar{width:42px;height:42px;border-radius:50%;background:#41335e;display:grid;place-items:center;font-weight:800;flex:none}.tabs{display:flex;gap:8px;margin:12px 0}.tabs button{flex:1;background:#20202c;border-radius:10px;padding:10px}.tabs button.active{background:#514078}.modal{position:absolute;z-index:12;inset:0;background:#000b;display:flex;align-items:flex-end}.modal-card{background:#171720;border-radius:22px 22px 0 0;padding:18px;width:100%;max-height:85%;overflow:auto;border-top:1px solid #444}.modal-card h3{margin:0 0 14px}.comment{padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}.toast{position:absolute;z-index:20;bottom:82px;left:50%;transform:translateX(-50%);background:#30303d;border:1px solid #555568;border-radius:12px;padding:10px 14px;font-size:12px;max-width:90%;text-align:center}.empty{text-align:center;color:var(--muted);padding:45px 12px}.profile-head{text-align:center;padding:20px 0}.profile-head .avatar{width:76px;height:76px;margin:0 auto 10px;font-size:25px}.video-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.video-tile{aspect-ratio:3/4;background:#242435;border-radius:8px;overflow:hidden}.video-tile video{width:100%;height:100%;object-fit:cover}.small{font-size:11px}
+:root {
+  --diror-purple: #9147ff;
+  --diror-bg: #08080d;
+  --diror-panel: #111119;
+  --diror-text: #ffffff;
+  --diror-muted: #aaaab8;
+}
+
+body {
+  background: var(--diror-bg) !important;
+  color: var(--diror-text);
+  font-family: Arial, sans-serif;
+}
+
+button {
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+button:active {
+  transform: scale(0.94);
+}
+
+/* Верхние вкладки */
+.feed-tabs {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  padding: 18px 10px;
+  background: linear-gradient(#08080de8, transparent);
+}
+
+.feed-tabs button {
+  border: 0;
+  background: none;
+  color: #aaaab8;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.feed-tabs button.active {
+  color: white;
+  position: relative;
+}
+
+.feed-tabs button.active::after {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 3px;
+  background: var(--diror-purple);
+  border-radius: 5px;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Видео */
+video {
+  background: #08080d;
+  object-fit: cover;
+}
+
+.video-card {
+  position: relative;
+  overflow: hidden;
+  background: #08080d;
+  color: white;
+}
+
+/* Правая панель действий */
+.video-actions {
+  position: absolute;
+  right: 12px;
+  bottom: 115px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.video-actions button {
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 50%;
+  background: #ffffff20;
+  color: white;
+  font-size: 23px;
+  backdrop-filter: blur(10px);
+}
+
+.video-actions button.liked {
+  color: #ff3e75;
+}
+
+/* Информация об авторе */
+.video-info {
+  position: absolute;
+  left: 15px;
+  right: 75px;
+  bottom: 90px;
+  z-index: 10;
+  color: white;
+  text-shadow: 0 2px 8px #000;
+}
+
+.video-info .username {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.video-info .caption {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.video-info .music {
+  color: #ddd;
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+/* Нижняя навигация */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px 5px 20px;
+  background: #09090ff5;
+  border-top: 1px solid #ffffff12;
+  backdrop-filter: blur(15px);
+}
+
+.bottom-nav button {
+  border: none;
+  background: none;
+  color: #aaaab8;
+  font-size: 12px;
+}
+
+.bottom-nav button.active {
+  color: var(--diror-purple);
+}
+
+.bottom-nav .create-button {
+  width: 43px;
+  height: 34px;
+  border-radius: 12px;
+  background: var(--diror-purple);
+  color: white;
+  font-size: 25px;
+  font-weight: bold;
+  box-shadow: 0 0 18px #9147ff66;
+}
+
+/* Плавные переходы */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 600px) {
+  .video-card {
+    min-height: 100dvh;
+  }
+}
+header.diror-header{
+  height:64px;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:8px;
+  align-items:center;
+  padding:0 12px;
+  background:linear-gradient(#08080ff2,#08080f00);
+}
+
+.diror-header .feed-tabs{
+  position:static;
+  display:flex;
+  justify-content:center;
+  gap:14px;
+  padding:0;
+  background:none;
+  white-space:nowrap;
+}
+
+.feed-tabs button{
+  background:none;
+  color:#aaa7bb;
+  font-size:13px;
+  font-weight:700;
+  padding:9px 2px;
+  border-radius:0;
+  border-bottom:2px solid transparent;
+}
+
+.feed-tabs button.active{
+  color:white;
+  border-bottom-color:#a78bfa;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body><div class="app">
+<header class="diror-header">
+  <div class="logo">DIROR<span>.</span></div>
+  <div class="feed-tabs">
+    <button onclick="toast('Раздел подписок')">Подписки</button>
+    <button class="active" onclick="navigate('feed')">Рекомендации</button>
+  </div>
+  <div class="row">
+    <button class="header-btn" onclick="showSearch()">⌕</button>
+    <button class="header-btn" onclick="showSettings()">⚙</button>
+  </div>
+</header>
+<section id="auth" class="screen hidden">
+ <div style="padding-top:5vh"><div class="logo" style="font-size:32px">DIROR<span>.</span></div><p class="muted">Твоя видеоплатформа. Войди или создай аккаунт.</p></div>
+ <div class="card"><div class="tabs"><button id="loginTab" class="active" onclick="authMode('login')">Вход</button><button id="signupTab" onclick="authMode('signup')">Регистрация</button></div>
+ <label class="muted">Имя пользователя (для регистрации)</label><input id="username" class="field" placeholder="например, diror_user" autocomplete="username">
+ <label class="muted">Электронная почта</label><input id="email" class="field" type="email" placeholder="name@example.com" autocomplete="email">
+ <label class="muted">Пароль</label><input id="password" class="field" type="password" placeholder="Минимум 8 символов" autocomplete="current-password">
+ <button id="authSubmit" class="primary" onclick="submitAuth()">Войти</button><p id="authMsg" class="muted"></p></div>
+ <p class="muted small">Публикуй только видео, на которые у тебя есть права. Не размещай личные данные. Используй жалобу, если видишь опасный или нарушающий правила контент.</p>
+</section>
+<section id="feedScreen" class="feed hidden"><div id="feedList"></div></section>
+<section id="searchScreen" class="screen hidden"><h2>Поиск</h2><input id="searchInput" class="field" placeholder="Имя пользователя..." oninput="searchUsers()"><div id="searchResults"></div></section>
+<section id="profileScreen" class="screen hidden"><div id="profileContent"></div></section>
+<section id="settingsScreen" class="screen hidden"><h2>Настройки</h2><div class="card"><div class="row" style="justify-content:space-between"><span>Качество</span><select id="quality" class="field" style="width:auto;margin:0" onchange="savePrefs()"><option value="auto">Авто</option><option value="data">Экономия трафика</option><option value="original">Исходное</option></select></div><p class="muted small">Доступное разрешение зависит от загруженного исходного видео.</p><div class="row" style="justify-content:space-between"><span>Скорость видео</span><select id="speed" class="field" style="width:auto;margin:0" onchange="applySpeed()"><option value=".5">0.5×</option><option value=".75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></div></div><div class="card"><button class="secondary" style="width:100%" onclick="signOut()">Выйти из аккаунта</button></div><p class="muted small">Diror — независимый проект, не связанный с TikTok.</p></section>
+<nav class="bottom hidden" id="bottom"><button class="nav active" onclick="navigate('feed')"><b>⌂</b>Лента</button><button class="nav" onclick="navigate('search')"><b>⌕</b>Поиск</button><button class="nav" onclick="openUpload()"><b class="plus">+</b>Создать</button><button class="nav" onclick="navigate('profile')"><b>◉</b>Профиль</button><button class="nav" onclick="navigate('settings')"><b>⚙</b>Настройки</button></nav>
+<div id="modal" class="modal hidden" onclick="if(event.target===this)closeModal()"><div class="modal-card" id="modalCard"></div></div><div id="toast" class="toast hidden"></div>
+</div>
+<script>
+const SUPABASE_URL="https://cbocptefcczfotthqsty.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_PkGNf-_0iCbtXMX8ySLtgA_BCj32t40";
+let db=null, currentUser=null, authModeValue="login", currentTab="feed", currentProfileId=null, likedIds=new Set(), followingIds=new Set(), savedIds=new Set(), videosCache=[];
+const $=id=>document.getElementById(id);
+function toast(s){$('toast').textContent=s;$('toast').classList.remove('hidden');setTimeout(()=>$('toast').classList.add('hidden'),2600)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function configured(){return SUPABASE_URL.startsWith('https://')&&!SUPABASE_ANON_KEY.startsWith('PASTE_')}
+function showOnly(id){['auth','feedScreen','searchScreen','profileScreen','settingsScreen'].forEach(x=>$(x).classList.toggle('hidden',x!==id));$('bottom').classList.toggle('hidden',id==='auth')}
+function authMode(m){authModeValue=m;$('loginTab').classList.toggle('active',m==='login');$('signupTab').classList.toggle('active',m==='signup');$('username').classList.toggle('hidden',m!=='signup');$('authSubmit').textContent=m==='signup'?'Создать аккаунт':'Войти';$('authMsg').textContent=''}
+async function boot(){
+ if(!configured()){showOnly('auth');$('authMsg').textContent='Сначала подключи Supabase: вставь URL проекта и publishable key в начале файла. Инструкция — в README.';authMode('login');return}
+ db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+ const {data:{session}}=await db.auth.getSession();currentUser=session?.user||null;
+ db.auth.onAuthStateChange((_event,session)=>{currentUser=session?.user||null;setTimeout(()=>currentUser?enterApp():showOnly('auth'),0)});
+ if(currentUser)await enterApp();else{showOnly('auth');authMode('login')}
+}
+async function submitAuth(){
+ if(!db){toast('Сначала настрой Supabase по инструкции');return}
+ const email=$('email').value.trim(),password=$('password').value,username=$('username').value.trim().toLowerCase();
+ if(!email||password.length<8){$('authMsg').textContent='Укажи почту и пароль минимум из 8 символов.';return}
+ $('authSubmit').disabled=true;$('authMsg').textContent='Подключаемся...';
+ try{
+  if(authModeValue==='signup'){
+   if(!/^[a-z0-9_]{3,20}$/.test(username))throw Error('Имя: 3–20 символов, латиница, цифры и _.');
+   const {data,error}=await db.auth.signUp({email,password,options:{data:{username,display_name:username}}});if(error)throw error;
+   $('authMsg').textContent=data.session?'Аккаунт создан. Загружаем...':'Аккаунт создан. Проверь почту и подтверди адрес, затем войди.';
+  }else{const {error}=await db.auth.signInWithPassword({email,password});if(error)throw error}
+ }catch(e){$('authMsg').textContent=e.message||'Не удалось выполнить действие'}
+ finally{$('authSubmit').disabled=false}
+}
+async function enterApp(){showOnly('feedScreen');$('bottom').classList.remove('hidden');await loadSocialState();await loadFeed();if(!window.dirorRealtime){window.dirorRealtime=db.channel('diror-feed').on('postgres_changes',{event:'INSERT',schema:'public',table:'videos'},()=>{if(currentTab==='feed')loadFeed()}).subscribe();}}
+async function loadSocialState(){
+ const [l,f,b]=await Promise.all([db.from('likes').select('video_id').eq('user_id',currentUser.id),db.from('follows').select('following_id').eq('follower_id',currentUser.id),db.from('bookmarks').select('video_id').eq('user_id',currentUser.id)]);
+ likedIds=new Set((l.data||[]).map(x=>x.video_id));followingIds=new Set((f.data||[]).map(x=>x.following_id));savedIds=new Set((b.data||[]).map(x=>x.video_id));
+}
+async function loadFeed(){
+ $('feedList').innerHTML='<div class="empty">Загружаем видео...</div>';
+ const {data,error}=await db.from('videos').select('id,user_id,caption,video_path,created_at,profiles:profiles!videos_user_id_fkey(username,display_name)').eq('is_public',true).order('created_at',{ascending:false}).limit(40);
+ if(error){$('feedList').innerHTML='<div class="empty">Ошибка загрузки: '+esc(error.message)+'</div>';return}
+ videosCache=data||[];if(!videosCache.length){$('feedList').innerHTML='<div class="empty">Пока нет видео.<br>Стань первым автором Diror — нажми «Создать».</div>';return}
+ const ids=videosCache.map(v=>v.id);const {data:likes}=await db.from('likes').select('video_id').in('video_id',ids);
+ const counts={};(likes||[]).forEach(x=>counts[x.video_id]=(counts[x.video_id]||0)+1);
+ $('feedList').replaceChildren();
+ for(const v of videosCache){
+  const url=db.storage.from('videos').getPublicUrl(v.video_path).data.publicUrl;
+  const name=v.profiles?.username||'user';
+  const el=document.createElement('article');el.className='post';
+  el.innerHTML=`<video src="${esc(url)}" playsinline loop muted preload="metadata"></video><div class="post-info"><div class="username">@${esc(name)}</div><div class="caption">${esc(v.caption)}</div></div><div class="post-actions">
+<div class="action"><button onclick="toggleVideoSound(this)">🔇</button><span>Звук</span></div>
+<div class="action"><button class="${likedIds.has(v.id)?'liked':''}" onclick="toggleLike('${v.id}',this)">${likedIds.has(v.id)?'♥':'♡'}</button><span>${counts[v.id]||0}</span></div><div class="action"><button onclick="openComments('${v.id}')">▢</button><span>Комменты</span></div><div class="action"><button onclick="toggleFollow('${v.user_id}')">${followingIds.has(v.user_id)?'✓':'+'}</button><span>Подписка</span></div><div class="action"><button onclick="toggleSave('${v.id}',this)">${savedIds.has(v.id)?'★':'☆'}</button><span>Сохранить</span></div><div class="action"><button onclick="reportVideo('${v.id}','${v.user_id}')">⚑</button><span>Жалоба</span></div></div>`;
+  const vid=el.querySelector('video');vid.playbackRate=Number($('speed')?.value||1);vid.addEventListener('click',()=>vid.paused?vid.play():vid.pause());
+  $('feedList').appendChild(el);
+ }
+ const obs=new IntersectionObserver(entries=>entries.forEach(e=>{const v=e.target;if(e.isIntersecting){document.querySelectorAll('.post video').forEach(x=>{if(x!==v)x.pause()});v.play().catch(()=>{})}else v.pause()}),{threshold:.65});
+ document.querySelectorAll('.post video').forEach(v=>obs.observe(v));
+}
+async function toggleLike(id,btn){const had=likedIds.has(id);let q=had?db.from('likes').delete().eq('video_id',id).eq('user_id',currentUser.id):db.from('likes').insert({video_id:id,user_id:currentUser.id});const {error}=await q;if(error){toast(error.message);return}had?likedIds.delete(id):likedIds.add(id);btn.classList.toggle('liked',!had);btn.textContent=had?'♡':'♥';const span=btn.parentElement.querySelector('span');span.textContent=Math.max(0,Number(span.textContent)+(had?-1:1))}
+async function toggleFollow(id){if(id===currentUser.id){toast('Это твой аккаунт');return}const had=followingIds.has(id);const q=had?db.from('follows').delete().eq('follower_id',currentUser.id).eq('following_id',id):db.from('follows').insert({follower_id:currentUser.id,following_id:id});const {error}=await q;if(error){toast(error.message);return}had?followingIds.delete(id):followingIds.add(id);toast(had?'Подписка отменена':'Ты подписался')}
+async function toggleSave(id,btn){const had=savedIds.has(id);const q=had?db.from('bookmarks').delete().eq('user_id',currentUser.id).eq('video_id',id):db.from('bookmarks').insert({user_id:currentUser.id,video_id:id});const {error}=await q;if(error){toast(error.message);return}had?savedIds.delete(id):savedIds.add(id);btn.textContent=had?'☆':'★';toast(had?'Удалено из избранного':'Сохранено')}
+function openModal(html){$('modalCard').innerHTML=html;$('modal').classList.remove('hidden')}
+function closeModal(){$('modal').classList.add('hidden')}
+async function openComments(id){
+ const {data,error}=await db.from('comments').select('id,body,created_at,profiles:profiles!comments_user_id_fkey(username)').eq('video_id',id).order('created_at',{ascending:true}).limit(100);
+ let html=`<h3>Комментарии</h3><div id="commentList">${error?esc(error.message):(data||[]).map(c=>`<div class="comment"><b>@${esc(c.profiles?.username||'user')}</b><br>${esc(c.body)}</div>`).join('')||'<p class="muted">Пока нет комментариев.</p>'}</div><textarea id="commentBody" class="field" rows="2" maxlength="500" placeholder="Напиши комментарий..."></textarea><button class="primary" onclick="sendComment('${id}')">Отправить</button>`;
+ openModal(html)
+}
+async function sendComment(id){const body=$('commentBody').value.trim();if(!body)return;const {error}=await db.from('comments').insert({video_id:id,user_id:currentUser.id,body});if(error){toast(error.message);return}closeModal();toast('Комментарий опубликован')}
+async function reportVideo(videoId,userId){openModal(`<h3>Пожаловаться на видео</h3><p class="muted">Выбери причину. Жалоба будет передана модераторам проекта.</p><select id="reportReason" class="field"><option>Нарушение правил сообщества</option><option>Спам или обман</option><option>Травля или оскорбления</option><option>Опасный контент</option><option>Нарушение авторских прав</option><option>Другое</option></select><textarea id="reportDetails" class="field" maxlength="500" placeholder="Дополнительная информация (необязательно)"></textarea><button class="primary" onclick="sendReport('${videoId}','${userId}')">Отправить жалобу</button>`)}
+async function sendReport(videoId,userId){const {error}=await db.from('reports').insert({reporter_id:currentUser.id,video_id:videoId,reported_user_id:userId,reason:$('reportReason').value,details:$('reportDetails').value});if(error){toast(error.message);return}closeModal();toast('Жалоба отправлена')}
+function openUpload(){openModal(`<h3>Новое видео</h3><p class="muted">Выбери своё видео (до 100 МБ) и добавь подпись.</p><input id="videoFile" class="field" type="file" accept="video/mp4,video/webm,video/quicktime,video/*"><textarea id="videoCaption" class="field" rows="3" maxlength="1500" placeholder="Расскажи о видео..."></textarea><label class="muted"><input id="publicVideo" type="checkbox" checked> Публичное видео — его увидят другие пользователи</label><p id="uploadMsg" class="muted"></p><button class="primary" onclick="uploadVideo()">Опубликовать</button>`)}
+async function uploadVideo(){
+ const file=$('videoFile').files[0];if(!file){toast('Сначала выбери видео');return}if(file.size>100*1024*1024){toast('Файл больше 100 МБ. Выбери видео поменьше.');return}
+ const ext=(file.name.split('.').pop()||'mp4').toLowerCase().replace(/[^a-z0-9]/g,'')||'mp4';const path=currentUser.id+'/'+crypto.randomUUID()+'.'+ext;$('uploadMsg').textContent='Загружаем видео...';
+ const up=await db.storage.from('videos').upload(path,file,{contentType:file.type||'video/mp4',upsert:false});if(up.error){$('uploadMsg').textContent=up.error.message;return}
+ const ins=await db.from('videos').insert({user_id:currentUser.id,caption:$('videoCaption').value.trim(),video_path:path,is_public:$('publicVideo').checked});
+ if(ins.error){await db.storage.from('videos').remove([path]);$('uploadMsg').textContent=ins.error.message;return}
+ closeModal();navigate('feed');await loadFeed();toast('Видео опубликовано!')
+}
+async function showSearch(){navigate('search');$('searchInput').focus()}
+async function searchUsers(){const term=$('searchInput').value.trim().toLowerCase();if(term.length<2){$('searchResults').innerHTML='<p class="muted">Введи минимум 2 символа.</p>';return}const {data,error}=await db.from('profiles').select('id,username,display_name,bio').ilike('username','%'+term+'%').limit(20);$('searchResults').innerHTML=error?esc(error.message):(data||[]).map(p=>`<div class="card row"><div class="avatar">${esc((p.username||'?')[0].toUpperCase())}</div><div style="flex:1"><b>@${esc(p.username)}</b><div class="muted">${esc(p.display_name||'')}</div></div><button class="secondary" onclick="viewProfile('${p.id}')">Открыть</button></div>`).join('')||'<p class="muted">Никого не нашли.</p>'}
+async function viewProfile(id){currentProfileId=id;const [{data:p},{data:vs},{count:followers},{count:following}]=await Promise.all([db.from('profiles').select('*').eq('id',id).single(),db.from('videos').select('id,video_path,caption').eq('user_id',id).eq('is_public',true).order('created_at',{ascending:false}),db.from('follows').select('*',{count:'exact',head:true}).eq('following_id',id),db.from('follows').select('*',{count:'exact',head:true}).eq('follower_id',id)]);if(!p){toast('Профиль не найден');return}
+ $('profileContent').innerHTML=`<div class="profile-head"><div class="avatar">${esc((p.username||'?')[0].toUpperCase())}</div><h2>@${esc(p.username)}</h2><div class="muted">${esc(p.display_name||'')}</div><p>${esc(p.bio||'')}</p><div class="row" style="justify-content:center"><span>${vs?.length||0} видео</span><span>${followers||0} подписчиков</span><span>${following||0} подписок</span></div>${id!==currentUser.id?`<button class="secondary" style="margin-top:12px" onclick="toggleFollow('${id}');viewProfile('${id}')">${followingIds.has(id)?'Отписаться':'Подписаться'}</button>`:''}</div><h3>Видео</h3><div class="video-grid">${(vs||[]).map(v=>`<div class="video-tile"><video src="${esc(db.storage.from('videos').getPublicUrl(v.video_path).data.publicUrl)}" muted playsinline controls></video></div>`).join('')}</div>`;
+ navigate('profile',false)
+}
+async function loadMyProfile(){await viewProfile(currentUser.id)}
+function navigate(tab,update=true){currentTab=tab;['feedScreen','searchScreen','profileScreen','settingsScreen'].forEach(x=>$(x).classList.add('hidden'));const map={feed:'feedScreen',search:'searchScreen',profile:'profileScreen',settings:'settingsScreen'};$(map[tab]).classList.remove('hidden');document.querySelectorAll('.nav').forEach((n,i)=>n.classList.toggle('active',['feed','search','create','profile','settings'][i]===tab));if(tab==='profile'&&update)loadMyProfile();if(tab==='feed')loadFeed()}
+function showSettings(){navigate('settings')}
+function savePrefs(){localStorage.setItem('diror_quality',$('quality').value);toast('Настройка сохранена')}
+function applySpeed(){const rate=Number($('speed').value);document.querySelectorAll('video').forEach(v=>v.playbackRate=rate)}
+function toggleVideoSound(btn){
+  const video = btn.closest('.post').querySelector('video');
+  video.muted = !video.muted;
+  btn.textContent = video.muted ? '🔇' : '🔊';
+  if(!video.muted){
+    video.play().catch(()=>toast('Нажми на видео для воспроизведения'));
+  }
+}
+async function signOut(){await db.auth.signOut();currentUser=null;showOnly('auth');authMode('login')}
+boot();
+</script></body></html>
